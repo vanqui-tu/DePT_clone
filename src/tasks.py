@@ -496,7 +496,7 @@ class ViNLI(AbstractTask):
     metric_names = ["accuracy"]
 
     def load_dataset(self, split):
-        if split == "test":
+        if split == "test" or split == "validation":
             dataset = datasets.load_dataset('linhphanff/ViNLI', split=split)
             filtered_dataset = dataset.filter(lambda example: example['gold_label'] != '-')
             return filtered_dataset
