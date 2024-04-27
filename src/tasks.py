@@ -485,6 +485,51 @@ class MNLI(AbstractTask):
                      "hypothesis:", example["hypothesis"]]
         tgt_texts = [str(example['label'])]
         return self.seq2seq_format(src_texts, tgt_texts, add_prefix)
+    
+class ViNLI(AbstractTask):
+    name = "vinli"
+    labels_list = ["0", "1", "2", "3"] 
+    split_to_data_split = {"train": "train",
+                        "validation": "validation",
+                        "test": "test"}
+    metric = [metrics.accuracy]
+    metric_names = ["accuracy"]
+
+    def load_dataset(self, split):
+        if split == "test":
+            dataset = datasets.load_dataset('linhphanff/ViNLI', split=split)
+            filtered_dataset = dataset.filter(lambda example: example['gold_label'] != '-')
+            return filtered_dataset
+        return datasets.load_dataset('linhphanff/ViNLI', split=split)
+
+    def preprocessor(self, example, add_prefix=True):
+        label_mapping = {"neutral" : "0", "entailment" : "1", "contradiction" : "2", "other" : "3"}
+        # src_texts = ["premise:", example['premise'],
+        #              "hypothesis: ", example["hypothesis"]]
+        src_texts = ["Tiền đề:", example['sentence1'],
+                     "Giả thuyết: ", example["sentence2"]]
+        tgt_texts = [str(label_mapping[example['gold_label']])]
+        return self.seq2seq_format(src_texts, tgt_texts, add_prefix)    
+
+class XNLI_Vi(AbstractTask):
+    name = "xnli_vi"
+    labels_list = ["0", "1", "2"] 
+    split_to_data_split = {"train": "train",
+                        "validation": "validation",
+                        "test": "test"}
+    metric = [metrics.accuracy]
+    metric_names = ["accuracy"]
+
+    def load_dataset(self, split):
+        return datasets.load_dataset('xnli', 'vi', split=split)
+
+    def preprocessor(self, example, add_prefix=True):
+        # src_texts = ["premise:", example['premise'],
+        #              "hypothesis: ", example["hypothesis"]]
+        src_texts = ["Tiền đề:", example['premise'],
+                     "Giả thuyết: ", example["hypothesis"]]
+        tgt_texts = [str(example['label'])]
+        return self.seq2seq_format(src_texts, tgt_texts, add_prefix)   
 
 
 class SNLI(AbstractTask):
@@ -880,6 +925,8 @@ TASK_MAPPING = OrderedDict(
         ('rte', RTE),
         ('wnli', WNLI),
         ('mnli', MNLI),
+        ('vinli', ViNLI),
+        ('xnli_vi', XNLI_Vi),
         ('qqp', QQP),
         ('stsb', STSB),
         ('superglue-boolq', SuperGLUEBoolQ),
